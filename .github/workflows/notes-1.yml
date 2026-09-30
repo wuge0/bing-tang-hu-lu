@@ -1,0 +1,43 @@
+name: recipe-notes-1
+
+on:
+  schedule:
+    - cron: '0 16 * * *'   # UTC 16:00 = 北京时间 00:00
+  workflow_dispatch:        # 支持手动触发
+
+jobs:
+  signin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: '初始化python环境'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10.11'
+
+      - name: '安装依赖'
+        run: |
+          pip install --upgrade pip
+          pip install -r ./requirements.txt
+
+      - name: '开始运行'
+        id: signin-outputs
+        env:
+          NOTIFIER_TYPE: ${{ secrets.NOTIFIER_TYPE }}
+          # pushplus（备用通道）
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          PUSHPLUS_TITLE: ${{ secrets.PUSHPLUS_TITLE }}
+          PUSHPLUS_TOPIC: ${{ secrets.PUSHPLUS_TOPIC }}
+          PUSHPLUS_TEMPLATE: ${{ secrets.PUSHPLUS_TEMPLATE }}
+          # WxPusher
+          WXPUSHER_APP_TOKEN: ${{ secrets.WXPUSHER_APP_TOKEN }}
+          WXPUSHER_UIDS: ${{ secrets.WXPUSHER_UIDS }}
+          WXPUSHER_TOPIC_IDS: ${{ secrets.WXPUSHER_TOPIC_IDS }}
+          WXPUSHER_CONTENT_TYPE: ${{ secrets.WXPUSHER_CONTENT_TYPE }}
+          WXPUSHER_SUMMARY: ${{ secrets.WXPUSHER_SUMMARY }}
+          # 本 workflow 专用账号（账号 1）
+          ACCOUNTS: ${{ secrets.ACCOUNT_1 }}
+        run: |
+          python ./main.py
